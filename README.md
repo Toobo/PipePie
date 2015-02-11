@@ -330,7 +330,11 @@ Note that:
 
 ## Installation
 
-- PipePie is a Composer package.
+- PipePie is a Composer package available on Packagist and can be installed by running
+
+```
+composer require toobo/pipepie:~0.1
+```
 
 ## Unit Tests
 
