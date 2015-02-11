@@ -97,7 +97,8 @@ called on the DTO instance that is passed to callbacks.
 use Toobo\PipePie\Pipeline;
 use Toobo\PipePie\DTO;
 
-$pipeline = (new Pipeline('I am the context '))    // Context here is a string, but can be whatever
+// Context here is a string, but can be anything
+$pipeline = (new Pipeline('I am the context '))
     ->pipe(function($carry, $initial, DTO $dto) {
        return $carry.$dto->context();
     })->pipe(function($carry, $initial, DTO $dto) {
@@ -158,7 +159,7 @@ use Toobo\PipePie\Pipeline;
 $pipeline = (new Pipeline(null, Pipeline::TO_ARRAY))
     ->pipe(function ($carry) {
         return $carry;
-    })->pipe(function (array $carry) { // type casting flag ensures returned value is an array
+    })->pipe(function (array $carry) { // type casting flag ensures $carry is an array
         $carry[] = 'bar';
         return $carry;
     });
@@ -177,14 +178,17 @@ the value returned by all the callbacks in the Pipeline.
 ```php
 use Toobo\PipePie\Pipeline;
 
-$caster = function ($data) { // ensures returned value is an array of unique integers
+/**
+ * Ensures returned value is an array of unique integers
+ */
+$caster = function ($data) { 
     if (! is_array($data)) {
         $data = (array) $data;
     }
     return array_values(array_unique(array_filter($data, 'is_int')));
 };
 
-$pipeline = (new Pipeline(null, $caster)) // set the "caster" as 2nd constructor argument
+$pipeline = (new Pipeline(null, $caster))
     ->pipe(function (array $carry) {
         return array_merge($carry, ['a', 1, 'b', 2, false, 3]);
     })->pipe(function (array $carry) {
@@ -213,10 +217,10 @@ That is done by passing an array of arguments as 2nd argument for `Pipeline::pip
 use Toobo\PipePie\Pipeline;
 
 $pipeline = (new Pipeline())->pipe(
-    function ($carry, $initial, $dto, $foo, $bar) { // 1st argument is the callback
+    function ($carry, $initial, $dto, $foo, $bar) { // 1st arg is the callback
         return $carry.$foo.', '.$bar;
     },
-    ['"foo"', '"bar"']                               // 2nd argument is the additional arguments array
+    ['"foo"', '"bar"']            // 2nd arg is the additional arguments array
 );
 
 echo $pipeline->applyTo('Args: '); // 'Args: "foo", "bar"'
@@ -250,7 +254,8 @@ $parent = (new Pipeline())
     });
     ->pipe($child2);
 
-echo $pipeline->applyTo('Called: '); // 'Called: Inner 1/1, Inner 1/2, Parent, Inner 2/1, Inner 2/2.'
+echo $pipeline->applyTo('Called: ');
+// 'Called: Inner 1/1, Inner 1/2, Parent, Inner 2/1, Inner 2/2.'
 ```
 
 Note that when using nested pipelines, just like in code above, DTO is shared among pipelines,
