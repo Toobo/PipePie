@@ -1,5 +1,7 @@
 # PipePie
 
+![travis-ci](https://travis-ci.org/Toobo/PipePie.svg?branch=master)
+
 ## Introduction
 
 PipePie is a generic tool to apply a set of callbacks to some input data to obtain some output data.
