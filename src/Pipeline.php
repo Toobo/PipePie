@@ -271,7 +271,7 @@ class Pipeline
      */
     private function toBool($data)
     {
-        return boolval($data);
+        return ! empty($data);
     }
 
     /**
