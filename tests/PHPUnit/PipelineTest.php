@@ -7,7 +7,7 @@ use Toobo\PipePie\Pipeline;
 class PipelineTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * @expectedException LogicException
+     * @expectedException \LogicException
      */
     public function testPipeFailsIfWorking()
     {
@@ -22,7 +22,7 @@ class PipelineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException LogicException
+     * @expectedException \LogicException
      */
     public function testPipeFailsIfLocked()
     {
@@ -44,7 +44,7 @@ class PipelineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException LogicException
+     * @expectedException \LogicException
      */
     public function testApplyFailsIfWorking()
     {
@@ -161,6 +161,15 @@ class PipelineTest extends PHPUnit_Framework_TestCase
         assertSame([0, 1, 2, 3, 4], $pipeline->applyTo(['foo' => 0, 'bar' => 'baz']));
     }
 
+    public function testApplyCasterFirstItem()
+    {
+        $pipeline = new Pipeline(null, Pipeline::TO_OBJECT, true);
+        $pipeline->pipe(function (\stdClass $carry) {
+            return $carry;
+        });
+        assertEquals((object) ['baz' => 'baz'], $pipeline->applyTo(['baz' => 'baz']));
+    }
+
     public function testApplyMoreArgs()
     {
         $pipeline = new Pipeline();
@@ -186,7 +195,7 @@ class PipelineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException LogicException
+     * @expectedException \LogicException
      */
     public function testApplyCustomDTOFailsIfWrongInput()
     {
@@ -249,7 +258,7 @@ class PipelineTest extends PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException LogicException
+     * @expectedException \LogicException
      */
     public function testInfoFailsIfWorking()
     {
@@ -264,7 +273,7 @@ class PipelineTest extends PHPUnit_Framework_TestCase
     public function testInfo()
     {
         $pipeline = new Pipeline('I am the context');
-        $pipeline->pipe(function ($carry, $initial, $dto) {
+        $pipeline->pipe(function ($carry, $initial, DTO $dto) {
             $dto['called'] = 1;
 
             return $carry.$initial.$dto->context();

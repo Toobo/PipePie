@@ -45,6 +45,11 @@ class Pipeline
     /**
      * @var bool
      */
+    private $castFirst;
+
+    /**
+     * @var bool
+     */
     private $locked;
 
     /**
@@ -58,18 +63,20 @@ class Pipeline
     private $DTOs;
 
     /**
-     * @param mixed             $context Something that can be accessed with $dto->context()
-     *                                   acting as context for all the callbacks
-     * @param int|callable|null $caster  Values returned by any of pipeline callbacks can be
-     *                                   casted using a class constants or a custom callback
+     * @param mixed             $context   Something that can be accessed with $dto->context()
+     *                                     acting as context for all the callbacks
+     * @param int|callable|null $caster    Values returned by any of pipeline callbacks can be
+     *                                     casted using a class constants or a custom callback
+     * @param bool              $castFirst Should initial value should be casted?
      */
-    public function __construct($context = null, $caster = null)
+    public function __construct($context = null, $caster = null, $castFirst = false)
     {
         $this->pipeline = new SplObjectStorage();
         if (is_int($caster) && array_key_exists($caster, self::$casters_map)) {
             $caster = [$this, self::$casters_map[$caster]];
         }
         $this->caster = is_callable($caster) ? $caster : null;
+        $this->castFirst = $this->toBool($castFirst);
         $this->context = $context;
         $this->DTOs = new SplStack();
         $this->locked = false;
@@ -121,7 +128,7 @@ class Pipeline
             return $initial;
         }
         $this->DTOs->push($this->init($dto, $initial));
-        $carry = is_null($cursor) ? $initial : $this->maybeCast($cursor);
+        $carry = $this->initialValue($initial, $cursor);
         while ($this->pipeline->valid()) {
             $carry = $this->run($initial, $carry);
             $this->pipeline->next();
@@ -199,6 +206,22 @@ class Pipeline
     }
 
     /**
+     * Setup initial value for Pipeline based on caster settings.
+     *
+     * @param  mixed $initial
+     * @param  mixed $cursor
+     * @return mixed
+     */
+    private function initialValue($initial, $cursor)
+    {
+        if (! is_null($cursor)) {
+            return $this->maybeCast($cursor);
+        }
+
+        return $this->castFirst ? $this->maybeCast($initial) : $initial;
+    }
+
+    /**
      * Run current callback in the pipeline.
      *
      * @param $initial
@@ -223,6 +246,12 @@ class Pipeline
      *
      * @param  mixed $data
      * @return mixed
+     * @uses \Toobo\PipePie\Pipeline::toArray()
+     * @uses \Toobo\PipePie\Pipeline::toObject()
+     * @uses \Toobo\PipePie\Pipeline::toString()
+     * @uses \Toobo\PipePie\Pipeline::toInt()
+     * @uses \Toobo\PipePie\Pipeline::toBool()
+     * @uses \Toobo\PipePie\Pipeline::toFloat()
      */
     private function maybeCast($data)
     {

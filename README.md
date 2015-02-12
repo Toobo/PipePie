@@ -112,7 +112,7 @@ echo $pipeline->applyTo('foo '); // 'foo I am the context I am the context'
 
 ## DTO "freshness"
 
-Everytime `Pipeline::applyTo()` is called on same Pipeline instance, DTO instance passed to callbacks
+Every time `Pipeline::applyTo()` is called on same Pipeline instance, DTO instance passed to callbacks
 is a *fresh* one, i.e. DTO state is not maintained across `applyTo()` calls.
 
 Only `DTO::context()` returns the same value because it is set at Pipeline level.
@@ -169,7 +169,21 @@ $pipeline = (new Pipeline(null, Pipeline::TO_ARRAY))
 return $pipeline->applyTo('foo'); // ['foo', 'bar']
 ```
 
-Note that value received by 1st callback is not returned by any callback, so it is not type casted.
+Note that, by default, initial value *passed to* 1st callback, is **not** type casted (but its *returning value* is).
+
+However, it's also possible to type cast even the initial value before it is passed to first callback.
+That can be done by passing `true` as 3rd argument to Pipeline constructor.
+
+```php
+use Toobo\PipePie\Pipeline;
+
+$pipeline = (new Pipeline(null, Pipeline::TO_ARRAY, true))
+    ->pipe(function (array $carry) {  // Even 1st callback receives type-casted value
+        return $carry;
+    });
+
+return $pipeline->applyTo('foo'); // ['foo']
+```
 
 
 ### Type Casting via Custom Callback
@@ -321,8 +335,8 @@ return $pipeline->info();
 
 Note that:
 
- - informations on various `applyTo()` calls, are shown in inverse chronological order: later calls are shown first;
- - an `info()` call *flushes* informations, so on subsequent calls the method returns only data for `applyTo()` calls
+ - information on various `applyTo()` calls, are shown in inverse chronological order: later calls are shown first;
+ - an `info()` call *flushes* information, so on subsequent calls the method returns only data for `applyTo()` calls
  happened since last `info()` call.
 
 ## Requirements
